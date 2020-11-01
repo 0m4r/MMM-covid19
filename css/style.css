@@ -1,0 +1,33 @@
+.mmm-covid19 {
+    border: 1px solid white;
+    padding: 0 1rem;
+}
+
+.mmm-covid19-table {
+    table-layout: fixed;
+}
+
+.mmm-covid19-table th {
+    font-size: 20px;
+}
+
+.mmm-covid19-table td {
+    font-size: 26px;
+}
+
+.mmm-covid19-table tr:nth-child(even) {
+    background-color: #6666660a;
+}
+
+.mmm-covid19-last-update {
+    font-size: 12px;
+    margin:0;
+    text-align: right;
+}
+
+.mmm-covid19-header {
+    font-size: 12px;
+    margin:0;
+    text-align: left;
+    font-weight: bolder;
+}
