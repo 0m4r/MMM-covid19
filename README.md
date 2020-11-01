@@ -2,7 +2,7 @@
 MAgic Mirror Module to display stats on Covid19
 
 ## configuration
-```json
+```js
 {
     disabled: false,
     module: "MMM-covid19",
