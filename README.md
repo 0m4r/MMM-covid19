@@ -1,5 +1,6 @@
 # MMM-covid19
-MAgic Mirror Module to display stats on Covid19
+Magic Mirror Module to display stats on Covid19.  
+Data is provided by _https://covid19api.com/_  
 
 ## configuration
 ```js
@@ -13,3 +14,6 @@ MAgic Mirror Module to display stats on Covid19
     }
 }
 ```
+
+## screenshots
+![MMM-covid19](docs/MMM-covid19.png)
