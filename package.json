@@ -12,14 +12,11 @@
   },
   "keywords": [
     "MMM",
-    "Magic",
-    "Mirror",
-    "Module",
+    "Magic-Mirror",
     "covid19",
     "covid"
   ],
   "author": "Omar Adobati",
-  "license": "ISC",
   "bugs": {
     "url": "https://github.com/0m4r/MMM-covid19/issues"
   },
