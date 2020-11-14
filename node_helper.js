@@ -19,17 +19,34 @@ module.exports = NodeHelper.create({
     },
 
     fetchSummary: function(url) {
-        console.log(this.name, 'fetchSummary')
+        // console.log(this.name, 'fetchSummary')
         request({
             url: 'https://api.covid19api.com/summary',
             method: 'GET'
         }, (error, response, body) => {
-            console.log(this.name, 'fetchSummary', error, response, body)
+            // console.log(this.name, 'fetchSummary', error, response, body)
             if (!error && response.statusCode == 200) {
                 var result = JSON.parse(body);
-                console.log(this.name, 'fetchSummary', result)
+                // console.log(this.name, 'fetchSummary', result)
                 this.sendSocketNotification('SUMMARY_RESULTS', result);
             }
+        });
+    },
+
+    fetchLive: function() {
+        // console.log(this.name, 'fetchSummary')
+        this.config.countryCodes.forEach(country => {
+            request({
+                url: `https://api.covid19api.com/total/country/${country}`,
+                method: 'GET'
+            }, (error, response, body) => {
+                // console.log(this.name, 'fetchSummary', error, response, body)
+                if (!error && response.statusCode == 200) {
+                    var result = JSON.parse(body);
+                    // console.log(this.name, 'fetchSummary', result)
+                    this.sendSocketNotification('LIVE_RESULTS', result);
+                }
+            });
         });
     },
 

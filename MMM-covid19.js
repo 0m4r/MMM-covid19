@@ -89,8 +89,10 @@ Module.register("MMM-covid19", {
         Log.info(this.name, 'scheduleUpdate')
         setInterval(() => {
             this.getSummary();
+            this.getLive();
         }, this.config.updateInterval);
         this.getSummary();
+        this.getLive();
     },
 
     getSummary: function() {
@@ -98,12 +100,16 @@ Module.register("MMM-covid19", {
         this.sendSocketNotification('GET_SUMMARY');
     },
 
+    getLive: function() {
+        Log.info(this.name, 'getLive')
+        this.sendSocketNotification('GET_LIVE');
+    },
+
     socketNotificationReceived: function(notification, payload) {
         Log.info(this.name, 'socketNotificationReceived', notification, payload)
         if (notification === "SUMMARY_RESULTS") {
             this.loaded = true;
             const toInclude = this.config.countryCodes
-            console.log(toInclude)
             const countries = payload.Countries.filter(r => toInclude.includes(r.CountryCode))
             this.results = {
                 ...payload,
@@ -111,6 +117,19 @@ Module.register("MMM-covid19", {
             }
             Log.info(this.name, 'socketNotificationReceived', this.results)
             this.updateDom()
+        }
+
+        if (notification === "LIVE_RESULTS") {
+            Log.debug(payload)
+            // this.loaded = true;
+            // const toInclude = this.config.countryCodes
+            // const countries = payload.Countries.filter(r => toInclude.includes(r.CountryCode))
+            // this.results = {
+            //     ...payload,
+            //     Countries: countries
+            // }
+            // Log.info(this.name, 'socketNotificationReceived', this.results)
+            // this.updateDom()
         }
     },
 
