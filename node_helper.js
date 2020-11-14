@@ -18,25 +18,34 @@ module.exports = NodeHelper.create({
         console.log("Stopping module: " + this.name);
     },
 
-    fetchSummary: function(url) {
-        console.log(this.name, 'fetchSummary')
-        request({
-            url: 'https://api.covid19api.com/summary',
-            method: 'GET'
-        }, (error, response, body) => {
-            console.log(this.name, 'fetchSummary', error, response, body)
-            if (!error && response.statusCode == 200) {
-                var result = JSON.parse(body);
-                console.log(this.name, 'fetchSummary', result)
-                this.sendSocketNotification('SUMMARY_RESULTS', result);
-            }
+    fetchLive: function(countryCodes = []) {
+        const requests = []
+        countryCodes.forEach(country => {
+            console.log(this.name, 'fetchLive', country)
+            const req = new Promise((resolve, reject) => request({
+                url: `https://api.covid19api.com/total/country/${country}`,
+                method: 'GET'
+            }, (error, response, body) => {
+                if (!error && response.statusCode == 200) {
+                    resolve(JSON.parse(body))
+                }
+                reject([])
+            }));
+            requests.push(req);
         });
+
+        Promise.all(requests)
+            .then(res => {
+                this.sendSocketNotification('LIVE_RESULTS', res);
+            })
+            .catch(() => this.sendSocketNotification('LIVE_RESULTS', []))
+        
     },
 
     socketNotificationReceived: function(notification, payload) {
-        console.log(this.name, 'socketNotificationReceived', notification, payload)
-        if (notification === 'GET_SUMMARY') {
-            this.fetchSummary(payload);
+        console.log(this.name, 'socketNotificationReceived', notification)
+        if (notification === 'GET_LIVE') {
+            this.fetchLive(payload);
         }
     }
 });

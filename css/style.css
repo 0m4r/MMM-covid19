@@ -1,22 +1,44 @@
 .mmm-covid19 {
-    border: 1px solid white;
     padding: 0 1rem;
 }
 
 .mmm-covid19-table {
     table-layout: fixed;
+    border-collapse: collapse !important;
+    border-bottom: 1px solid white;
+}
+
+.mmm-covid19-row-totals {
+    font-size: 22px;
+    line-height: 26px;
+    font-weight: 100;
+}
+
+.mmm-covid19-row-deltas {
+    font-size: 26px;
+    line-height: 28px;
+    background-color: #6666660a;
+}
+
+.mmm-covid19-delta-increase {
+    color: red;
+}
+
+.mmm-covid19-delta-decrease {
+    color: green;
+}
+
+.mmm-covid19-divider {
+    background-color: white;
+    line-height: 10px;
 }
 
 .mmm-covid19-table th {
     font-size: 20px;
 }
 
-.mmm-covid19-table td {
-    font-size: 26px;
-}
-
-.mmm-covid19-table tr:nth-child(even) {
-    background-color: #6666660a;
+.mmm-covid19-table tr:nth-child(odd) {
+    border-top: 1px solid white;
 }
 
 .mmm-covid19-last-update {
