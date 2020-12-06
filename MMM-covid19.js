@@ -7,10 +7,15 @@
 
 Module.register("MMM-covid19", {
 
+    summary: [],
+    results: [],
+
     // Module config defaults.
     defaults: {
         updateInterval: 1 * 60 * 60 * 1000, // 1 hour
-        countryCodes: ["DE", "IT"]
+        countryCodes: ["DE", "IT"],
+        world: false,
+        live: true
     },
 
     start: function () {
@@ -68,8 +73,36 @@ Module.register("MMM-covid19", {
         const tr_headers = document.createElement('tr')
         table.appendChild(tr_headers)
 
-
         wrapper.appendChild(table)
+
+        this.summary.forEach((c, index) => {
+            const tr = document.createElement("tr")
+            tr.className = index === 0 ? 'mmm-covid19-row-totals' : 'mmm-covid19-row-deltas'
+            if (index === 0) {
+                const td_country = document.createElement("td")
+                const text_country = document.createTextNode(c.Country)
+                td_country.appendChild(text_country)
+                td_country.rowSpan = 2
+                tr.appendChild(td_country)
+            }
+
+            const prepareTableCellData = (data) => {
+                const td = document.createElement("td")
+                const text = document.createTextNode(data)
+                td.appendChild(text)
+                if (!isNaN(data)) {
+                    td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
+                }
+                tr.appendChild(td)
+            }
+
+            prepareTableCellData(c.Active)
+            prepareTableCellData(c.Recovered)
+            prepareTableCellData(c.Deaths)
+            prepareTableCellData(c.Confirmed)
+            table.appendChild(tr)
+        });
+
 
         this.results.forEach((r, i) => {
             r.forEach((c, index) => {
@@ -106,14 +139,21 @@ Module.register("MMM-covid19", {
         Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
         setInterval(() => {
             Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
-            this.getLive();
+            this.config.live && this.getLive();
+            this.config.world && this.getSummary();
         }, this.config.updateInterval);
-        this.getLive();
+        this.config.live && this.getLive();
+        this.config.world && this.getSummary();
     },
 
     getLive: function () {
         Log.info(this.name, 'getLive')
         this.sendSocketNotification('GET_LIVE', this.config.countryCodes);
+    },
+
+    getSummary: function () {
+        Log.info(this.name, 'getSummary')
+        this.sendSocketNotification('GET_SUMMARY');
     },
 
     socketNotificationReceived: function (notification, payload) {
@@ -137,6 +177,29 @@ Module.register("MMM-covid19", {
                 results.push([present, difference])
             })
             this.results = results
+            this.updateDom()
+        }
+
+        if (notification === "SUMMARY_RESULTS") {
+            this.loaded = true
+
+            const difference = {
+                Country: 'World',
+                Active: 'New',
+                Confirmed: payload.Global.NewConfirmed,
+                Recovered: payload.Global.NewRecovered,
+                Deaths: payload.Global.NewDeaths
+            }
+
+            const present = {
+                Country: 'Summary',
+                Active: 'Total',
+                Confirmed: payload.Global.TotalConfirmed,
+                Recovered: payload.Global.TotalRecovered,
+                Deaths: payload.Global.TotalDeaths
+            }
+
+            this.summary = [present, difference]
             this.updateDom()
         }
     },

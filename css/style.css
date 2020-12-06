@@ -12,20 +12,24 @@
     font-size: 22px;
     line-height: 26px;
     font-weight: 100;
+    text-align: right;
 }
 
 .mmm-covid19-row-deltas {
     font-size: 26px;
     line-height: 28px;
-    background-color: #6666660a;
+    background-color: #6666663a;
+    text-align: right;
 }
 
 .mmm-covid19-delta-increase {
     color: red;
+    text-align: right;
 }
 
 .mmm-covid19-delta-decrease {
     color: green;
+    text-align: right;
 }
 
 .mmm-covid19-divider {

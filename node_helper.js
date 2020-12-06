@@ -16,14 +16,17 @@ module.exports = NodeHelper.create({
 
     stop: function() {
         console.log("Stopping module: " + this.name);
-    },
+    },  
 
     fetchLive: function(countryCodes = []) {
         const requests = []
+        var to = new Date();
+        var from = new Date()        
+        from.setDate(to.getDate() - 1);
+
         countryCodes.forEach(country => {
-            console.log(this.name, 'fetchLive', country)
             const req = new Promise((resolve, reject) => request({
-                url: `https://api.covid19api.com/total/country/${country}`,
+                url: `https://api.covid19api.com/total/country/${country}?from=${from.toISOString()}&to=${to.toISOString()}`,
                 method: 'GET'
             }, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
@@ -42,10 +45,25 @@ module.exports = NodeHelper.create({
         
     },
 
+    fetchSummary: function() {
+        request({
+            url: "https://api.covid19api.com/summary",
+            method: 'GET'
+        }, (error, response, body) => {
+            let results = []
+            if (!error && response.statusCode == 200) {
+                results = JSON.parse(body);
+            }
+            this.sendSocketNotification('SUMMARY_RESULTS', results);
+        });
+    },
+
     socketNotificationReceived: function(notification, payload) {
-        console.log(this.name, 'socketNotificationReceived', notification)
         if (notification === 'GET_LIVE') {
             this.fetchLive(payload);
+        }
+        if (notification === 'GET_SUMMARY') {
+            this.fetchSummary(payload);
         }
     }
 });
