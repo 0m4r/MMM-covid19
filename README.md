@@ -12,7 +12,9 @@ The data shown in the table displays the total numbers (top) and the difference 
     position: "bottom_center",
     config: {
         updateInterval: 1 * 60 * 60 *1000, // 1 hour
-        countryCodes: ["DE", "IT", "FR"]
+        countryCodes: ["DE", "IT", "FR"],
+        live: true,
+        world: false
     }
 }
 ```
