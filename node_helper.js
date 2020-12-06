@@ -14,7 +14,7 @@ module.exports = NodeHelper.create({
         console.log("Starting module: " + this.name);
     },
 
-    start: function() {
+    stop: function() {
         console.log("Stopping module: " + this.name);
     },
 
