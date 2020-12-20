@@ -88,11 +88,15 @@ Module.register("MMM-covid19", {
 
             const prepareTableCellData = (data) => {
                 const td = document.createElement("td")
-                const text = document.createTextNode(data)
-                td.appendChild(text)
+                let text = data
                 if (!isNaN(data)) {
+                    if (Number.prototype.toLocaleString) {
+                        text = data.toLocaleString()
+                    }
                     td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
                 }
+                console.log(text)
+                td.appendChild(document.createTextNode(text))
                 tr.appendChild(td)
             }
 
@@ -118,9 +122,15 @@ Module.register("MMM-covid19", {
 
                 const prepareTableCellData = (data) => {
                     const td = document.createElement("td")
-                    const text = document.createTextNode(data)
-                    td.appendChild(text)
-                    td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
+                    let text = data
+                    if (!isNaN(data)) {
+                        if (Number.prototype.toLocaleString) {
+                            text = data.toLocaleString()
+                        }
+                        td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
+                    }
+                    console.log(text)
+                    td.appendChild(document.createTextNode(text))
                     tr.appendChild(td)
                 }
 
