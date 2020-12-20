@@ -21,3 +21,5 @@ The data shown in the table displays the total numbers (top) and the difference 
 
 ## screenshots
 ![MMM-covid19](docs/MMM-covid19.png)
+
+![MMM-covid19 with summary](docs/MMM-covid19_2020-12-20.png)
