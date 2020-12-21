@@ -95,7 +95,6 @@ Module.register("MMM-covid19", {
                     }
                     td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
                 }
-                console.log(text)
                 td.appendChild(document.createTextNode(text))
                 tr.appendChild(td)
             }
@@ -129,7 +128,6 @@ Module.register("MMM-covid19", {
                         }
                         td.className = index === 0 ? 'mmm-covid19-total' : parseFloat(data) >= 0 ? 'mmm-covid19-delta-increase' : 'mmm-covid19-delta-decrease'
                     }
-                    console.log(text)
                     td.appendChild(document.createTextNode(text))
                     tr.appendChild(td)
                 }
@@ -168,6 +166,14 @@ Module.register("MMM-covid19", {
 
     socketNotificationReceived: function (notification, payload) {
         Log.info(this.name, 'socketNotificationReceived', notification)
+        Log.info(this.name, 'socketNotificationReceived', payload)
+
+        if(!payload || payload.length === 0) {
+            this.loaded = true
+            this.results = []
+            this.updateDom()
+            return
+        }
 
         if (notification === "LIVE_RESULTS") {
             this.loaded = true

@@ -21,11 +21,12 @@ module.exports = NodeHelper.create({
     fetchLive: function(countryCodes = []) {
         const requests = []
         var to = new Date();
-        var from = new Date()        
+        var from = new Date()
         from.setDate(to.getDate() - 1);
 
         countryCodes.forEach(country => {
             const req = new Promise((resolve, reject) => request({
+                rejectUnauthorized: false,
                 url: `https://api.covid19api.com/total/country/${country}?from=${from.toISOString()}&to=${to.toISOString()}`,
                 method: 'GET'
             }, (error, response, body) => {
@@ -47,6 +48,7 @@ module.exports = NodeHelper.create({
 
     fetchSummary: function() {
         request({
+            rejectUnauthorized: false,
             url: "https://api.covid19api.com/summary",
             method: 'GET'
         }, (error, response, body) => {
@@ -60,10 +62,10 @@ module.exports = NodeHelper.create({
 
     socketNotificationReceived: function(notification, payload) {
         if (notification === 'GET_LIVE') {
-            this.fetchLive(payload);
+            this.fetchLive(payload || []);
         }
         if (notification === 'GET_SUMMARY') {
-            this.fetchSummary(payload);
+            this.fetchSummary(payload || []);
         }
     }
 });
