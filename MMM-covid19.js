@@ -9,6 +9,7 @@ Module.register("MMM-covid19", {
 
     summary: [],
     results: [],
+    version: null,
     interval: null,
 
     // Module config defaults.
@@ -30,6 +31,17 @@ Module.register("MMM-covid19", {
         clearInterval(this.interval)
     },
 
+    resume: function () {
+        Log.info("Resuming module " + this.name);
+        Log.info("with config: " + JSON.stringify(this.config));
+        this.scheduleUpdate();
+    },
+    
+    suspend: function () {
+        Log.info("Suspending module " + this.name);
+        clearInterval(this.interval)
+	},
+
     getDom: function () {
         const wrapper = document.createElement("div");
         wrapper.className = "mmm-covid19";
@@ -41,7 +53,7 @@ Module.register("MMM-covid19", {
 
         const p_header = document.createElement("p")
         p_header.className = "mmm-covid19-header";
-        const p_header_text = document.createTextNode("Live COVID-19 numbers (provided by https://covid19api.com/)")
+        const p_header_text = document.createTextNode("Daily COVID-19 numbers (provided by https://covid19api.com/)")
         p_header.appendChild(p_header_text)
         wrapper.appendChild(p_header)
 
@@ -80,6 +92,18 @@ Module.register("MMM-covid19", {
         table.appendChild(tr_headers)
 
         wrapper.appendChild(table)
+
+        Log.info(this.version)
+        if (this.version && 'local' in this.version && 'remote' in this.version) {
+            const p_footer = document.createElement("p")
+            p_footer.classList.add("mmm-covid19-footer");
+            if (parseFloat(this.version.local) < parseFloat(this.version.local)) {
+                p_footer.classList.add("mmm-covid19-update");
+            }
+            const p_footer_text = document.createTextNode("installed version: " + this.version.local + " | latest version: " + this.version.remote )
+            p_footer.appendChild(p_footer_text)
+            wrapper.appendChild(p_footer)
+        }
 
         this.summary.forEach((c, index) => {
             const tr = document.createElement("tr")
@@ -155,9 +179,11 @@ Module.register("MMM-covid19", {
             Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
             this.config.live && this.getLive();
             this.config.world && this.getWorld();
+            this.getVersion();
         }, this.config.updateInterval);
         this.config.live && this.getLive();
         this.config.world && this.getWorld();
+        this.getVersion();
     },
 
     getLive: function () {
@@ -170,6 +196,11 @@ Module.register("MMM-covid19", {
         this.sendSocketNotification('GET_WORLD');
     },
 
+    getVersion: function () {
+        Log.info(this.name, 'getVersion')
+        this.sendSocketNotification('GET_VERSION');
+    },
+
     socketNotificationReceived: function (notification, payload) {
         Log.info(this.name, 'socketNotificationReceived', notification)
         Log.info(this.name, 'socketNotificationReceived', payload)
@@ -177,8 +208,15 @@ Module.register("MMM-covid19", {
         if(!payload || payload.length === 0) {
             this.loaded = true
             this.results = []
-            this.updateDom()
-            return
+            this.summary = []
+            this.version = {}
+            this.updateDom(300)
+        }
+
+        if (notification === "VERSION_RESULTS") {
+            this.loaded = true
+            this.version = payload
+            this.updateDom(300)
         }
 
         if (notification === "LIVE_RESULTS") {
@@ -209,7 +247,7 @@ Module.register("MMM-covid19", {
                 }
             })
             this.results = results
-            this.updateDom()
+            this.updateDom(300)
         }
 
         if (notification === "WORLD_RESULTS") {
@@ -232,7 +270,7 @@ Module.register("MMM-covid19", {
             }
 
             this.summary = [present, difference]
-            this.updateDom()
+            this.updateDom(300)
         }
     },
 

@@ -7,6 +7,7 @@
 
 const NodeHelper = require('node_helper');
 const request = require('request');
+const { version } = require('./package.json')
 
 module.exports = NodeHelper.create({
 
@@ -80,12 +81,32 @@ module.exports = NodeHelper.create({
         });
     },
 
+    fetchVersion: function () {
+        request({
+            rejectUnauthorized: false,
+            url: "https://raw.githubusercontent.com/0m4r/MMM-covid19/main/package.json",
+            method: 'GET',
+            qs: this.getFromTo(1),
+        }, (error, response, body) => {
+            let remote = 0
+            if (!error && response.statusCode == 200) {
+                results = JSON.parse(body);
+                remote = results.version || 0
+            }
+            this.sendSocketNotification('VERSION_RESULTS', {local: version, remote});
+        });
+    },
+
     socketNotificationReceived: function(notification, payload) {
+        console.log('socketNotificationReceived', notification, payload)
         if (notification === 'GET_LIVE') {
             this.fetchLive(payload || []);
         }
         if (notification === 'GET_WORLD') {
             this.fetchWorld(payload || []);
+        }
+        if (notification === 'GET_VERSION') {
+            this.fetchVersion(payload || null);
         }
     }
 });
