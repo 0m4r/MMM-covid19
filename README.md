@@ -11,15 +11,13 @@ The data shown in the table displays the total numbers (top) and the difference 
     module: "MMM-covid19",
     position: "bottom_center",
     config: {
-        updateInterval: 1 * 60 * 60 *1000, // 1 hour
-        countryCodes: ["DE", "IT", "FR"],
+        updateInterval: 24 * 60 * 60 *1000, // 24 hours
+        countryCodes: ["DE", "IT", "HK"],
         live: true,
-        world: false
+        world: true
     }
 }
 ```
 
 ## screenshots
 ![MMM-covid19](docs/MMM-covid19.png)
-
-![MMM-covid19 with summary](docs/MMM-covid19_2020-12-20.png)

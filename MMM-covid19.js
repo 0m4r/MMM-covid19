@@ -1,5 +1,5 @@
 /* Magic Mirror
- * Module: MMM-Covid19
+ * Module: MMM-covid19
  *
  * By 0m4r
  * 
@@ -9,19 +9,25 @@ Module.register("MMM-covid19", {
 
     summary: [],
     results: [],
+    interval: null,
 
     // Module config defaults.
     defaults: {
-        updateInterval: 1 * 60 * 60 * 1000, // 1 hour
+        updateInterval: 24 * 60 * 60 * 1000, // 24 hours
         countryCodes: ["DE", "IT"],
         world: false,
         live: true
     },
 
     start: function () {
-        Log.info("Starting module: " + this.name);
+        Log.info("Starting module " + this.name);
         Log.info("with config: " + JSON.stringify(this.config));
         this.scheduleUpdate();
+    },
+
+    stop: function () {
+        Log.info("Stopping module " + this.name);
+        clearInterval(this.interval)
     },
 
     getDom: function () {
@@ -145,13 +151,13 @@ Module.register("MMM-covid19", {
 
     scheduleUpdate: function () {
         Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
-        setInterval(() => {
+        this.interval = setInterval(() => {
             Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
             this.config.live && this.getLive();
-            this.config.world && this.getSummary();
+            this.config.world && this.getWorld();
         }, this.config.updateInterval);
         this.config.live && this.getLive();
-        this.config.world && this.getSummary();
+        this.config.world && this.getWorld();
     },
 
     getLive: function () {
@@ -159,9 +165,9 @@ Module.register("MMM-covid19", {
         this.sendSocketNotification('GET_LIVE', this.config.countryCodes);
     },
 
-    getSummary: function () {
-        Log.info(this.name, 'getSummary')
-        this.sendSocketNotification('GET_SUMMARY');
+    getWorld: function () {
+        Log.info(this.name, 'getWorld')
+        this.sendSocketNotification('GET_WORLD');
     },
 
     socketNotificationReceived: function (notification, payload) {
@@ -179,40 +185,50 @@ Module.register("MMM-covid19", {
             this.loaded = true
             const results = []
             payload.forEach(p => {
-                const pastDays = p.slice(Math.max(p.length - 2, 0))
-                const past = pastDays[0]
-                const present = pastDays[1]
-                const difference = {
-                    Country: present.Country,
-                    Active: present.Active - past.Active,
-                    Confirmed: present.Confirmed - past.Confirmed,
-                    Recovered: present.Recovered - past.Recovered,
-                    Deaths: present.Deaths - past.Deaths
+                if (p.body.length < 2) {
+                    const notAvailable = {
+                        Country: p.countryCode,
+                        Active: '-',
+                        Confirmed: '-',
+                        Recovered: '-',
+                        Deaths: '-'
+                    }
+                    results.push([notAvailable, notAvailable])
+                } else {
+                    const pastDays = p.body.slice(Math.max(p.length - 2, 0))
+                    const past = pastDays[0]
+                    const present = pastDays[1]
+                    const difference = {
+                        Country: present.Country,
+                        Active: present.Active - past.Active,
+                        Confirmed: present.Confirmed - past.Confirmed,
+                        Recovered: present.Recovered - past.Recovered,
+                        Deaths: present.Deaths - past.Deaths
+                    }
+                    results.push([present, difference])
                 }
-                pastDays.push(difference)
-                results.push([present, difference])
             })
             this.results = results
             this.updateDom()
         }
 
-        if (notification === "SUMMARY_RESULTS") {
+        if (notification === "WORLD_RESULTS") {
             this.loaded = true
 
             const difference = {
                 Country: 'World',
-                Active: 'New',
-                Confirmed: payload.Global.NewConfirmed,
-                Recovered: payload.Global.NewRecovered,
-                Deaths: payload.Global.NewDeaths
+                Active: '-',
+                Confirmed: payload.NewConfirmed,
+                Recovered: payload.NewRecovered,
+                Deaths: payload.NewDeaths
             }
 
             const present = {
-                Country: 'Summary',
-                Active: 'Total',
-                Confirmed: payload.Global.TotalConfirmed,
-                Recovered: payload.Global.TotalRecovered,
-                Deaths: payload.Global.TotalDeaths
+                Country: 'World',
+                Active: '-',
+                Confirmed: payload.TotalConfirmed,
+                Recovered: payload.TotalRecovered,
+                Deaths: payload.TotalDeaths
             }
 
             this.summary = [present, difference]

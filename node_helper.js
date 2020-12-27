@@ -1,5 +1,5 @@
 /* Magic Mirror
- * Module: MMM-COVID19
+ * Module: MMM-covid19
  *
  * By 0m4r
  * 
@@ -11,29 +11,48 @@ const request = require('request');
 module.exports = NodeHelper.create({
 
     start: function() {
-        console.log("Starting module: " + this.name);
+        console.log("Starting node helper for: " + this.name);
     },
 
     stop: function() {
-        console.log("Stopping module: " + this.name);
+        console.log("Stopping node helper for: " + this.name);
     },  
+
+    getFromTo: function (delta = 2) {
+
+        const buildDate = function() { 
+            let d = new Date();
+            d.setHours(0)
+            d.setMinutes(0)
+            d.setSeconds(0)
+            d.setMilliseconds(0)
+            return d
+        }
+
+        let to = buildDate()
+        let from = buildDate()
+        from.setDate(to.getDate() - delta);
+
+        to = to.toISOString()
+        from = from.toISOString()
+
+        return {from, to}
+    },
 
     fetchLive: function(countryCodes = []) {
         const requests = []
-        var to = new Date();
-        var from = new Date()
-        from.setDate(to.getDate() - 1);
 
-        countryCodes.forEach(country => {
+        countryCodes.forEach(countryCode => {
             const req = new Promise((resolve, reject) => request({
                 rejectUnauthorized: false,
-                url: `https://api.covid19api.com/total/country/${country}?from=${from.toISOString()}&to=${to.toISOString()}`,
+                url: `https://api.covid19api.com/total/country/${countryCode}`,
+                qs: this.getFromTo(),
                 method: 'GET'
             }, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
-                    resolve(JSON.parse(body))
+                    resolve({countryCode, body: JSON.parse(body)})
                 }
-                reject([])
+                reject({countryCode, body: []})
             }));
             requests.push(req);
         });
@@ -46,17 +65,18 @@ module.exports = NodeHelper.create({
         
     },
 
-    fetchSummary: function() {
+    fetchWorld: function() {
         request({
             rejectUnauthorized: false,
-            url: "https://api.covid19api.com/summary",
-            method: 'GET'
+            url: "https://api.covid19api.com/world",
+            method: 'GET',
+            qs: this.getFromTo(1),
         }, (error, response, body) => {
             let results = []
             if (!error && response.statusCode == 200) {
                 results = JSON.parse(body);
             }
-            this.sendSocketNotification('SUMMARY_RESULTS', results);
+            this.sendSocketNotification('WORLD_RESULTS', results[0]);
         });
     },
 
@@ -64,8 +84,8 @@ module.exports = NodeHelper.create({
         if (notification === 'GET_LIVE') {
             this.fetchLive(payload || []);
         }
-        if (notification === 'GET_SUMMARY') {
-            this.fetchSummary(payload || []);
+        if (notification === 'GET_WORLD') {
+            this.fetchWorld(payload || []);
         }
     }
 });
