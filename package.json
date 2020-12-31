@@ -14,7 +14,8 @@
     "MMM",
     "Magic-Mirror",
     "covid19",
-    "covid"
+    "covid",
+    "covid19api"
   ],
   "author": "Omar Adobati",
   "bugs": {

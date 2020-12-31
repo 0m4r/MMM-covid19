@@ -98,7 +98,6 @@ module.exports = NodeHelper.create({
     },
 
     socketNotificationReceived: function(notification, payload) {
-        console.log('socketNotificationReceived', notification, payload)
         if (notification === 'GET_LIVE') {
             this.fetchLive(payload || []);
         }

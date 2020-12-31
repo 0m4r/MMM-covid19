@@ -17,12 +17,13 @@ Module.register("MMM-covid19", {
         updateInterval: 24 * 60 * 60 * 1000, // 24 hours
         countryCodes: ["DE", "IT"],
         world: false,
-        live: true
+        live: true,
+        debug: false
     },
 
     start: function () {
         Log.info("Starting module " + this.name);
-        Log.info("with config: " + JSON.stringify(this.config));
+        this.debug && Log.info("with config: " + JSON.stringify(this.config));
         this.scheduleUpdate();
     },
 
@@ -33,7 +34,7 @@ Module.register("MMM-covid19", {
 
     resume: function () {
         Log.info("Resuming module " + this.name);
-        Log.info("with config: " + JSON.stringify(this.config));
+        this.debug && Log.info("with config: " + JSON.stringify(this.config));
         this.scheduleUpdate();
     },
     
@@ -93,7 +94,6 @@ Module.register("MMM-covid19", {
 
         wrapper.appendChild(table)
 
-        Log.info(this.version)
         if (this.version && 'local' in this.version && 'remote' in this.version) {
             const p_footer = document.createElement("p")
             p_footer.classList.add("mmm-covid19-footer");
@@ -174,9 +174,7 @@ Module.register("MMM-covid19", {
     },
 
     scheduleUpdate: function () {
-        Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
         this.interval = setInterval(() => {
-            Log.info(this.name, 'scheduleUpdate', this.config.updateInterval)
             this.config.live && this.getLive();
             this.config.world && this.getWorld();
             this.getVersion();
@@ -187,36 +185,36 @@ Module.register("MMM-covid19", {
     },
 
     getLive: function () {
-        Log.info(this.name, 'getLive')
+        this.debug && Log.info(this.name, 'getLive')
         this.sendSocketNotification('GET_LIVE', this.config.countryCodes);
     },
 
     getWorld: function () {
-        Log.info(this.name, 'getWorld')
+        this.debug && Log.info(this.name, 'getWorld')
         this.sendSocketNotification('GET_WORLD');
     },
 
     getVersion: function () {
-        Log.info(this.name, 'getVersion')
+        this.debug && Log.info(this.name, 'getVersion')
         this.sendSocketNotification('GET_VERSION');
     },
 
     socketNotificationReceived: function (notification, payload) {
-        Log.info(this.name, 'socketNotificationReceived', notification)
-        Log.info(this.name, 'socketNotificationReceived', payload)
+        this.debug && Log.info(this.name, 'socketNotificationReceived', notification)
+        this.debug && Log.info(this.name, 'socketNotificationReceived', payload)
 
         if(!payload || payload.length === 0) {
             this.loaded = true
             this.results = []
             this.summary = []
             this.version = {}
-            this.updateDom(300)
+            this.updateDom()
         }
 
         if (notification === "VERSION_RESULTS") {
             this.loaded = true
             this.version = payload
-            this.updateDom(300)
+            this.updateDom()
         }
 
         if (notification === "LIVE_RESULTS") {
@@ -247,7 +245,7 @@ Module.register("MMM-covid19", {
                 }
             })
             this.results = results
-            this.updateDom(300)
+            this.updateDom()
         }
 
         if (notification === "WORLD_RESULTS") {
@@ -270,7 +268,7 @@ Module.register("MMM-covid19", {
             }
 
             this.summary = [present, difference]
-            this.updateDom(300)
+            this.updateDom()
         }
     },
 
