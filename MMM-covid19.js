@@ -253,7 +253,7 @@ Module.register("MMM-covid19", {
 
             const difference = {
                 Country: 'World',
-                Active: '-',
+                Active: parseFloat(payload.NewConfirmed) - parseFloat(payload.NewRecovered) - parseFloat(payload.NewDeaths),
                 Confirmed: payload.NewConfirmed,
                 Recovered: payload.NewRecovered,
                 Deaths: payload.NewDeaths
@@ -261,7 +261,7 @@ Module.register("MMM-covid19", {
 
             const present = {
                 Country: 'World',
-                Active: '-',
+                Active: parseFloat(payload.TotalConfirmed) - parseFloat(payload.TotalRecovered) - parseFloat(payload.TotalDeaths),
                 Confirmed: payload.TotalConfirmed,
                 Recovered: payload.TotalRecovered,
                 Deaths: payload.TotalDeaths
