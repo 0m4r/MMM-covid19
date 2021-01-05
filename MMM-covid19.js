@@ -97,8 +97,8 @@ Module.register("MMM-covid19", {
         if (this.version && 'local' in this.version && 'remote' in this.version) {
             const p_footer = document.createElement("p")
             p_footer.classList.add("mmm-covid19-footer");
-            if (parseFloat(this.version.local) < parseFloat(this.version.remote)) {
-                p_footer.classList.add("mmm-covid19-update");
+            if (parseFloat(this.version.local) !== parseFloat(this.version.remote)) {
+                p_footer.classList.add("mmm-covid19-footer-version-update");
             }
             const p_footer_text = document.createTextNode("installed version: " + this.version.local + " | latest version: " + this.version.remote )
             p_footer.appendChild(p_footer_text)
@@ -209,6 +209,7 @@ Module.register("MMM-covid19", {
             if (payload && Object.keys(payload).length > 0) {
                 this.version = payload
             }
+            console.log(this.version)
             this.updateDom()
         }
 
