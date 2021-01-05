@@ -74,10 +74,10 @@ module.exports = NodeHelper.create({
             qs: this.getFromTo(1),
         }, (error, response, body) => {
             let results = []
-            if (!error && response.statusCode == 200) {
-                results = JSON.parse(body);
+            if (body && body !== 'null\n' && !error && response.statusCode == 200) {
+                results = JSON.parse(body)[0]
             }
-            this.sendSocketNotification('WORLD_RESULTS', results[0]);
+            this.sendSocketNotification('WORLD_RESULTS', {countryCode: 'world', body: results});
         });
     },
 

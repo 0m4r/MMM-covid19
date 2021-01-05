@@ -203,70 +203,85 @@ Module.register("MMM-covid19", {
         this.debug && Log.info(this.name, 'socketNotificationReceived', notification)
         this.debug && Log.info(this.name, 'socketNotificationReceived', payload)
 
-        if(!payload || payload.length === 0) {
-            this.loaded = true
-            this.results = []
-            this.summary = []
-            this.version = {}
-            this.updateDom()
-        }
-
         if (notification === "VERSION_RESULTS") {
             this.loaded = true
-            this.version = payload
+            this.version = {}
+            if (payload && payload.length > 0) {
+                this.version = payload
+            }
             this.updateDom()
         }
 
         if (notification === "LIVE_RESULTS") {
             this.loaded = true
-            const results = []
-            payload.forEach(p => {
-                if (p.body.length < 2) {
-                    const notAvailable = {
-                        Country: p.countryCode,
-                        Active: '-',
-                        Confirmed: '-',
-                        Recovered: '-',
-                        Deaths: '-'
+            this.results = []
+            if (payload && payload.length > 0) {
+                const results = []
+                payload.forEach(p => {
+                    if (p.body.length < 2) {
+                        const notAvailable = {
+                            Country: p.countryCode,
+                            Active: '-',
+                            Confirmed: '-',
+                            Recovered: '-',
+                            Deaths: '-'
+                        }
+                        results.push([notAvailable, notAvailable])
+                    } else {
+                        const pastDays = p.body.slice(Math.max(p.length - 2, 0))
+                        const past = pastDays[0]
+                        const present = pastDays[1]
+                        const difference = {
+                            Country: present.Country,
+                            Active: present.Active - past.Active,
+                            Confirmed: present.Confirmed - past.Confirmed,
+                            Recovered: present.Recovered - past.Recovered,
+                            Deaths: present.Deaths - past.Deaths
+                        }
+                        results.push([present, difference])
                     }
-                    results.push([notAvailable, notAvailable])
-                } else {
-                    const pastDays = p.body.slice(Math.max(p.length - 2, 0))
-                    const past = pastDays[0]
-                    const present = pastDays[1]
-                    const difference = {
-                        Country: present.Country,
-                        Active: present.Active - past.Active,
-                        Confirmed: present.Confirmed - past.Confirmed,
-                        Recovered: present.Recovered - past.Recovered,
-                        Deaths: present.Deaths - past.Deaths
-                    }
-                    results.push([present, difference])
-                }
-            })
-            this.results = results
+                })
+                this.results = results
+            }
             this.updateDom()
         }
 
         if (notification === "WORLD_RESULTS") {
             this.loaded = true
-
-            const difference = {
+            this.summary = []
+            let difference = {
                 Country: 'World',
-                Active: parseFloat(payload.NewConfirmed) - parseFloat(payload.NewRecovered) - parseFloat(payload.NewDeaths),
-                Confirmed: payload.NewConfirmed,
-                Recovered: payload.NewRecovered,
-                Deaths: payload.NewDeaths
+                Active: '-',
+                Confirmed: '-',
+                Recovered: '-',
+                Deaths: '-'
             }
 
-            const present = {
+            let present = {
                 Country: 'World',
-                Active: parseFloat(payload.TotalConfirmed) - parseFloat(payload.TotalRecovered) - parseFloat(payload.TotalDeaths),
-                Confirmed: payload.TotalConfirmed,
-                Recovered: payload.TotalRecovered,
-                Deaths: payload.TotalDeaths
+                Active: '-',
+                Confirmed: '-',
+                Recovered: '-',
+                Deaths: '-'
             }
+            
+            if (payload && payload.length > 0) {
+                difference = {
+                    Country: 'World',
+                    Active: parseFloat(payload.NewConfirmed) - parseFloat(payload.NewRecovered) - parseFloat(payload.NewDeaths),
+                    Confirmed: payload.NewConfirmed,
+                    Recovered: payload.NewRecovered,
+                    Deaths: payload.NewDeaths
+                }
 
+                present = {
+                    Country: 'World',
+                    Active: parseFloat(payload.TotalConfirmed) - parseFloat(payload.TotalRecovered) - parseFloat(payload.TotalDeaths),
+                    Confirmed: payload.TotalConfirmed,
+                    Recovered: payload.TotalRecovered,
+                    Deaths: payload.TotalDeaths
+                }
+            }
             this.summary = [present, difference]
             this.updateDom()
         }
