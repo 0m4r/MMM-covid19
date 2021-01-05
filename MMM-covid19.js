@@ -206,7 +206,7 @@ Module.register("MMM-covid19", {
         if (notification === "VERSION_RESULTS") {
             this.loaded = true
             this.version = {}
-            if (payload && payload.length > 0) {
+            if (payload && Object.keys(payload).length > 0) {
                 this.version = payload
             }
             this.updateDom()
