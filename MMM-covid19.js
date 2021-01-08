@@ -264,22 +264,22 @@ Module.register("MMM-covid19", {
                 Recovered: '-',
                 Deaths: '-'
             }
-            
-            if (payload && payload.length > 0) {
+
+            if (payload && payload.body && Object.keys(payload.body).length > 0) {
                 difference = {
                     Country: 'World',
-                    Active: parseFloat(payload.NewConfirmed) - parseFloat(payload.NewRecovered) - parseFloat(payload.NewDeaths),
-                    Confirmed: payload.NewConfirmed,
-                    Recovered: payload.NewRecovered,
-                    Deaths: payload.NewDeaths
+                    Active: parseFloat(payload.body.NewConfirmed) - parseFloat(payload.body.NewRecovered) - parseFloat(payload.body.NewDeaths),
+                    Confirmed: payload.body.NewConfirmed,
+                    Recovered: payload.body.NewRecovered,
+                    Deaths: payload.body.NewDeaths
                 }
 
                 present = {
                     Country: 'World',
-                    Active: parseFloat(payload.TotalConfirmed) - parseFloat(payload.TotalRecovered) - parseFloat(payload.TotalDeaths),
-                    Confirmed: payload.TotalConfirmed,
-                    Recovered: payload.TotalRecovered,
-                    Deaths: payload.TotalDeaths
+                    Active: parseFloat(payload.body.TotalConfirmed) - parseFloat(payload.body.TotalRecovered) - parseFloat(payload.body.TotalDeaths),
+                    Confirmed: payload.body.TotalConfirmed,
+                    Recovered: payload.body.TotalRecovered,
+                    Deaths: payload.body.TotalDeaths
                 }
             }
             this.summary = [present, difference]

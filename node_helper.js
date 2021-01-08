@@ -73,7 +73,7 @@ module.exports = NodeHelper.create({
             method: 'GET',
             qs: this.getFromTo(1),
         }, (error, response, body) => {
-            let results = []
+            let results = {}
             if (body && body !== 'null\n' && !error && response.statusCode == 200) {
                 results = JSON.parse(body)[0]
             }
