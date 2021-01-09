@@ -1,65 +1,65 @@
 .mmm-covid19 {
-    padding: 0 1rem;
+  padding: 0 1rem;
 }
 
 .mmm-covid19-table {
-    table-layout: fixed;
-    border-collapse: collapse !important;
-    border-bottom: 1px solid white;
+  table-layout: fixed;
+  border-collapse: collapse !important;
+  border-bottom: 1px solid white;
 }
 
 .mmm-covid19-row-totals {
-    font-size: 22px;
-    line-height: 26px;
-    font-weight: 100;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 100;
 }
 
 .mmm-covid19-row-deltas {
-    font-size: 26px;
-    line-height: 28px;
-    background-color: #6666663a;
+  font-size: 26px;
+  line-height: 28px;
+  background-color: #6666663a;
 }
 
 .mmm-covid19-delta-increase {
-    color: red;
+  color: red;
 }
 
 .mmm-covid19-delta-decrease {
-    color: green;
+  color: green;
 }
 
 .mmm-covid19-divider {
-    background-color: white;
-    line-height: 10px;
+  background-color: white;
+  line-height: 10px;
 }
 
 .mmm-covid19-table th {
-    font-size: 20px;
+  font-size: 20px;
 }
 
 .mmm-covid19-table tr:nth-child(odd) {
-    border-top: 1px solid white;
+  border-top: 1px solid white;
 }
 
 .mmm-covid19-last-update {
-    font-size: 12px;
-    margin:0;
+  font-size: 12px;
+  margin: 0;
 }
 
 .mmm-covid19-header {
-    font-size: 12px;
-    margin:0;
-    text-align: left;
-    line-height: 1.5em;
+  font-size: 12px;
+  margin: 0;
+  text-align: left;
+  line-height: 1.5em;
 }
 
 .mmm-covid19-footer {
-    font-size: 12px;
-    margin:0;
-    text-align: right;
-    line-height: 1.5em;
+  font-size: 12px;
+  margin: 0;
+  text-align: right;
+  line-height: 1.5em;
 }
 
 .mmm-covid19-footer-version-update {
-    color: gold;
+  color: gold;
 }
