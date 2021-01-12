@@ -190,7 +190,7 @@ Module.register("MMM-covid19", {
         const results = []
         payload.forEach(p => {
           if (p.body.length < 2) {
-            const countryLabel = p.bod[0] && p.body[0].Country || p.countryCode
+            const countryLabel = p.body[0] && p.body[0].Country || p.countryCode
             const notAvailable = {
               Country: countryLabel,
               Active: '-',
