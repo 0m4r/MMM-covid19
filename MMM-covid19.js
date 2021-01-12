@@ -18,12 +18,12 @@ Module.register("MMM-covid19", {
     countryCodes: ["DE", "IT"],
     world: false,
     live: true,
-    debug: false
+    debug: true
   },
 
   start: function () {
     Log.info("Starting module " + this.name);
-    this.debug && Log.info("with config: " + JSON.stringify(this.config));
+    Log.debug("with config: " + JSON.stringify(this.config));
     this.scheduleUpdate();
   },
 
@@ -34,7 +34,7 @@ Module.register("MMM-covid19", {
 
   resume: function () {
     Log.info("Resuming module " + this.name);
-    this.debug && Log.info("with config: " + JSON.stringify(this.config));
+    Log.debug("with config: " + JSON.stringify(this.config));
     this.scheduleUpdate();
   },
 
@@ -94,16 +94,37 @@ Module.register("MMM-covid19", {
 
     wrapper.appendChild(table)
 
-    if (this.version && 'local' in this.version && 'remote' in this.version) {
-      const p_footer = document.createElement("p")
-      p_footer.classList.add("mmm-covid19-footer");
-      if (this.version.local !== this.version.remote) {
-        p_footer.classList.add("mmm-covid19-footer-version-update");
-      }
-      const p_footer_text = document.createTextNode("installed version: " + this.version.local + " | latest version: " + this.version.remote)
-      p_footer.appendChild(p_footer_text)
-      wrapper.appendChild(p_footer)
+    const p_footer = document.createElement("p")
+    p_footer.classList.add("mmm-covid19-footer");
+    wrapper.appendChild(p_footer)
+
+    const spanForFooter = (label, className) => {
+      const span_footer = document.createElement("span")
+      span_footer.classList.add(className);
+      const span_footer_text = document.createTextNode(label)
+      span_footer.appendChild(span_footer_text)
+      return span_footer
     }
+
+    if (this.results && this.results.length && this.results[0] && this.results[0].length === 2 && 'Date' in this.results[0][1] && 'Date' in this.results[0][0]) {
+      const p_footer_left = document.createElement("p")
+      p_footer_left.classList.add("mmm-covid19-footer-left");
+      p_footer.appendChild(p_footer_left)
+      p_footer_left.appendChild(spanForFooter('Numbers up to: ' + this.results[0][0].Date, 'mmm-covid19-footer-dates'))
+      p_footer_left.appendChild(spanForFooter('Delta with: ' + this.results[0][1].Date, 'mmm-covid19-footer-dates'))
+    }
+
+    if (this.version && 'local' in this.version && 'remote' in this.version) {
+
+      const p_footer_right = document.createElement("p")
+      p_footer_right.classList.add("mmm-covid19-footer-right");
+      p_footer.appendChild(p_footer_right)
+      p_footer_right.appendChild(spanForFooter('installed version:' + this.version.local, 'mmm-covid19-footer-version'))
+      p_footer_right.appendChild(spanForFooter(' '))
+      p_footer_right.appendChild(spanForFooter('latest version:' + this.version.remote, 'mmm-covid19-footer-version'))
+    }
+
+    
 
     const buildTableRows = () => { 
       [...this.summary, ...this.results].forEach(i => {
@@ -145,34 +166,36 @@ Module.register("MMM-covid19", {
   },
 
   scheduleUpdate: function () {
+    Log.debug('scheduleUpdate', this.interval)
+    clearInterval(this.interval)
     this.interval = setInterval(() => {
-      this.config.live && this.getLive();
+      this.config.live && this.getTotal();
       this.config.world && this.getWorld();
       this.getVersion();
     }, this.config.updateInterval);
-    this.config.live && this.getLive();
+    this.config.live && this.getTotal();
     this.config.world && this.getWorld();
     this.getVersion();
   },
 
-  getLive: function () {
-    this.debug && Log.info(this.name, 'getLive')
-    this.sendSocketNotification('GET_LIVE', this.config.countryCodes);
+  getTotal: function () {
+    Log.debug(this.name, 'getTotal')
+    this.sendSocketNotification('GET_TOTAL', this.config.countryCodes);
   },
 
   getWorld: function () {
-    this.debug && Log.info(this.name, 'getWorld')
+    Log.debug(this.name, 'getWorld')
     this.sendSocketNotification('GET_WORLD');
   },
 
   getVersion: function () {
-    this.debug && Log.info(this.name, 'getVersion')
+    Log.debug(this.name, 'getVersion')
     this.sendSocketNotification('GET_VERSION');
   },
 
   socketNotificationReceived: function (notification, payload) {
-    this.debug && Log.info(this.name, 'socketNotificationReceived', notification)
-    this.debug && Log.info(this.name, 'socketNotificationReceived', payload)
+    Log.debug(this.name, 'socketNotificationReceived', notification)
+    Log.debug(this.name, 'socketNotificationReceived', payload)
 
     if (notification === "VERSION_RESULTS") {
       this.loaded = true
@@ -183,7 +206,7 @@ Module.register("MMM-covid19", {
       this.updateDom()
     }
 
-    if (notification === "LIVE_RESULTS") {
+    if (notification === "TOTAL_RESULTS") {
       this.loaded = true
       this.results = []
       if (payload && payload.length > 0) {
@@ -208,7 +231,8 @@ Module.register("MMM-covid19", {
               Active: present.Active - past.Active,
               Confirmed: present.Confirmed - past.Confirmed,
               Recovered: present.Recovered - past.Recovered,
-              Deaths: present.Deaths - past.Deaths
+              Deaths: present.Deaths - past.Deaths,
+              Date: past.Date
             }
             results.push([present, difference])
           }
@@ -226,7 +250,8 @@ Module.register("MMM-covid19", {
         Active: '-',
         Confirmed: '-',
         Recovered: '-',
-        Deaths: '-'
+        Deaths: '-',
+        Date: '-'
       }
 
       let present = {
@@ -234,7 +259,8 @@ Module.register("MMM-covid19", {
         Active: '-',
         Confirmed: '-',
         Recovered: '-',
-        Deaths: '-'
+        Deaths: '-',
+        Date: '-'
       }
 
       if (payload && payload.body && Object.keys(payload.body).length > 0) {
@@ -243,7 +269,8 @@ Module.register("MMM-covid19", {
           Active: parseFloat(payload.body.NewConfirmed) - parseFloat(payload.body.NewRecovered) - parseFloat(payload.body.NewDeaths),
           Confirmed: payload.body.NewConfirmed,
           Recovered: payload.body.NewRecovered,
-          Deaths: payload.body.NewDeaths
+          Deaths: payload.body.NewDeaths,
+          Date: '-'
         }
 
         present = {
@@ -251,7 +278,8 @@ Module.register("MMM-covid19", {
           Active: parseFloat(payload.body.TotalConfirmed) - parseFloat(payload.body.TotalRecovered) - parseFloat(payload.body.TotalDeaths),
           Confirmed: payload.body.TotalConfirmed,
           Recovered: payload.body.TotalRecovered,
-          Deaths: payload.body.TotalDeaths
+          Deaths: payload.body.TotalDeaths,
+          Date: '-'
         }
       }
       this.summary = [[present, difference]]
