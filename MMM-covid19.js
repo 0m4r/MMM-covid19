@@ -110,7 +110,7 @@ Module.register("MMM-covid19", {
       const p_footer_left = document.createElement("p")
       p_footer_left.classList.add("mmm-covid19-footer-left");
       p_footer.appendChild(p_footer_left)
-      p_footer_left.appendChild(spanForFooter('Numbers up to: ' + this.results[0][0].Date, 'mmm-covid19-footer-dates'))
+      p_footer_left.appendChild(spanForFooter('Data updated to: ' + this.results[0][0].Date, 'mmm-covid19-footer-dates'))
       p_footer_left.appendChild(spanForFooter('Delta with: ' + this.results[0][1].Date, 'mmm-covid19-footer-dates'))
     }
 
@@ -122,6 +122,9 @@ Module.register("MMM-covid19", {
       p_footer_right.appendChild(spanForFooter('installed version:' + this.version.local, 'mmm-covid19-footer-version'))
       p_footer_right.appendChild(spanForFooter(' '))
       p_footer_right.appendChild(spanForFooter('latest version:' + this.version.remote, 'mmm-covid19-footer-version'))
+      if (this.version.local !== this.version.remote) {
+        p_footer_right.classList.add("mmm-covid19-footer-version-update");
+      }
     }
 
     
