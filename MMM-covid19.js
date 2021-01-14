@@ -35,12 +35,13 @@ Module.register("MMM-covid19", {
   resume: function () {
     Log.info("Resuming module " + this.name);
     Log.debug("with config: " + JSON.stringify(this.config));
-    this.scheduleUpdate();
+    if(this.interval === null) {
+      this.scheduleUpdate();
+    }
   },
 
   suspend: function () {
     Log.info("Suspending module " + this.name);
-    clearInterval(this.interval)
   },
 
   getDom: function () {
@@ -127,8 +128,6 @@ Module.register("MMM-covid19", {
       }
     }
 
-    
-
     const buildTableRows = () => { 
       [...this.summary, ...this.results].forEach(i => {
         i.forEach((c, index) => {
@@ -169,16 +168,17 @@ Module.register("MMM-covid19", {
   },
 
   scheduleUpdate: function () {
-    Log.debug('scheduleUpdate', this.interval)
-    clearInterval(this.interval)
-    this.interval = setInterval(() => {
+    Log.info(this.name, 'scheduleUpdate', this.interval, this.config.updateInterval)
+    if(this.interval === null) {
+      this.interval = setInterval(() => {
+        this.config.live && this.getTotal();
+        this.config.world && this.getWorld();
+        this.getVersion();
+      }, this.config.updateInterval);
       this.config.live && this.getTotal();
       this.config.world && this.getWorld();
       this.getVersion();
-    }, this.config.updateInterval);
-    this.config.live && this.getTotal();
-    this.config.world && this.getWorld();
-    this.getVersion();
+    }
   },
 
   getTotal: function () {

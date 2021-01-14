@@ -21,7 +21,6 @@ module.exports = NodeHelper.create({
   },
 
   getFromTo: function (delta = 2) {
-
     const buildDate = function () {
       let d = new Date();
       d.setUTCHours(0,0,0,0);
@@ -42,10 +41,11 @@ module.exports = NodeHelper.create({
     const requests = []
     const qs = this.getFromTo()
     countryCodes.forEach(countryCode => {
-      Log.debug(this.name, 'fetchTotal', `https://api.covid19api.com/total/country/${countryCode}`, qs)
+      const url = `https://api.covid19api.com/total/country/${countryCode}`
+      Log.log(this.name, 'fetchTotal', url, qs)
       const req = new Promise((resolve, reject) => request({
         rejectUnauthorized: false,
-        url: `https://api.covid19api.com/total/country/${countryCode}`,
+        url,
         qs,
         method: 'GET'
       }, (error, response, body) => {
@@ -67,11 +67,14 @@ module.exports = NodeHelper.create({
   },
 
   fetchWorld: function () {
+    const qs = this.getFromTo(1)
+    const url = "https://api.covid19api.com/world"
+    Log.log(this.name, 'fetchWorld', url, qs)
     request({
       rejectUnauthorized: false,
-      url: "https://api.covid19api.com/world",
+      url,
       method: 'GET',
-      qs: this.getFromTo(1),
+      qs,
     }, (error, response, body) => {
       let results = {}
       if (body && body !== 'null\n' && !error && response.statusCode == 200) {
@@ -82,11 +85,12 @@ module.exports = NodeHelper.create({
   },
 
   fetchVersion: function () {
+    const url = "https://raw.githubusercontent.com/0m4r/MMM-covid19/main/package.json"
+    Log.log(this.name, 'fetchVersion', url)
     request({
       rejectUnauthorized: false,
-      url: "https://raw.githubusercontent.com/0m4r/MMM-covid19/main/package.json",
+      url,
       method: 'GET',
-      qs: this.getFromTo(1),
     }, (error, response, body) => {
       let remote = 0
       if (!error && response.statusCode == 200) {
@@ -98,6 +102,7 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function (notification, payload) {
+    Log.debug(this.name, notification, payload)
     if (notification === 'GET_TOTAL') {
       this.fetchTotal(payload || []);
     }

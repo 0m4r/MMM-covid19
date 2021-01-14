@@ -71,10 +71,12 @@
 
 .mmm-covid19-footer-right {
   text-align: right;
+  float: right;
 }
 
 .mmm-covid19-footer-left {
   text-align: left;
+  float: left;
 }
 
 .mmm-covid19-footer-version,
