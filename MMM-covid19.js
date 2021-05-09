@@ -8,21 +8,14 @@
 Module.register('MMM-covid19', {
   summary: [],
   results: [],
+  nextUpdate: [],
   version: null,
   notAvailable: '-',
-
-  // Module config defaults.
-  defaults: {
-    updateInterval: 24 * 60 * 60 * 1000, // 24 hours
-    countryCodes: ['DE', 'IT'],
-    world: false,
-    live: true,
-  },
 
   start: function () {
     Log.info('Starting module ' + this.name);
     Log.debug('with config: ' + JSON.stringify(this.config));
-    this.sendSocketNotification('CONFIG', this.config);
+    this.sendSocketNotification(this.name + 'CONFIG', this.config);
   },
 
   stop: function () {
@@ -113,16 +106,18 @@ Module.register('MMM-covid19', {
       p_footer.appendChild(p_footer_left);
       p_footer_left.appendChild(
         spanForFooter(
-          'Data updated to: ' + this.results[0][0].Date,
+          'Data for: ' + new Date(this.results[0][0].Date).toLocaleString() + ' - ' + new Date(this.results[0][1].Date).toLocaleString(),
           'mmm-covid19-footer-dates'
         )
       );
-      p_footer_left.appendChild(
-        spanForFooter(
-          'Delta with: ' + this.results[0][1].Date,
-          'mmm-covid19-footer-dates'
-        )
-      );
+      if (this.nextUpdate && this.nextUpdate[1]) {
+        p_footer_left.appendChild(
+          spanForFooter(
+            'Next API request: ' + new Date(this.nextUpdate[1]).toLocaleString(),
+            'mmm-covid19-footer-dates'
+          )
+        );
+      }
     }
 
     if (this.version && 'local' in this.version && 'remote' in this.version) {
@@ -172,8 +167,8 @@ Module.register('MMM-covid19', {
                 index === 0
                   ? 'mmm-covid19-total'
                   : parseFloat(data) >= 0
-                  ? 'mmm-covid19-delta-increase'
-                  : 'mmm-covid19-delta-decrease';
+                    ? 'mmm-covid19-delta-increase'
+                    : 'mmm-covid19-delta-decrease';
             }
             td.appendChild(document.createTextNode(text));
             tr.appendChild(td);
@@ -196,7 +191,7 @@ Module.register('MMM-covid19', {
     Log.debug(this.name, 'socketNotificationReceived', notification);
     Log.debug(this.name, 'socketNotificationReceived', JSON.stringify(payload));
 
-    if (notification === 'VERSION_RESULTS') {
+    if (notification === this.name + 'VERSION_RESULTS') {
       this.loaded = true;
       this.version = {};
       if (payload && Object.keys(payload).length > 0) {
@@ -205,7 +200,7 @@ Module.register('MMM-covid19', {
       this.updateDom();
     }
 
-    if (notification === 'TOTAL_RESULTS') {
+    if (notification === this.name + 'TOTAL_RESULTS') {
       this.loaded = true;
       this.results = [];
       if (payload && payload.length > 0) {
@@ -223,7 +218,7 @@ Module.register('MMM-covid19', {
           notAvailable.Country = countryLabel;
           if (p.body.length <= 1) {
             results.push([notAvailable, notAvailable]);
-          } else if (p.body.lenght === 1) {
+          } else if (p.body.length === 1) {
             const pastDays = p.body.slice(Math.max(p.length - 2, 0));
             const last = pastDays[0];
             const present = {
@@ -255,7 +250,7 @@ Module.register('MMM-covid19', {
       this.updateDom();
     }
 
-    if (notification === 'WORLD_RESULTS') {
+    if (notification === this.name + 'WORLD_RESULTS') {
       this.loaded = true;
       this.summary = [];
       let difference = {
@@ -298,6 +293,12 @@ Module.register('MMM-covid19', {
         };
       }
       this.summary = [[present, difference]];
+      this.updateDom();
+    }
+
+    if (notification === this.name + 'NEXT_UPDATE') {
+      this.loaded = true,
+        this.nextUpdate = payload;
       this.updateDom();
     }
   },
