@@ -56,8 +56,40 @@
 .mmm-covid19-footer {
   font-size: 12px;
   margin: 0;
-  text-align: right;
+  text-align: left;
   line-height: 1.5em;
+}
+
+.mmm-covid19-footer-right,
+.mmm-covid19-footer-left {
+  margin: 0;
+  width: 50%;
+  max-width: 50%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.mmm-covid19-footer-right {
+  text-align: right;
+  float: right;
+}
+
+.mmm-covid19-footer-left {
+  text-align: left;
+  float: left;
+}
+
+.mmm-covid19-footer-version,
+.mmm-covid19-footer-dates {
+  display: inline-block;
+  max-width: 100%;
+}
+.mmm-covid19-footer-version {
+  margin-left: 0.5rem;
+}
+
+.mmm-covid19-footer-dates {
+  margin-right: 0.5rem;
 }
 
 .mmm-covid19-footer-version-update {
