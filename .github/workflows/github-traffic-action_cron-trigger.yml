@@ -1,3 +1,4 @@
+name: Cron Github Traffic Action
 on:
   schedule:
     # runs once a week on sunday
@@ -20,7 +21,7 @@ jobs:
     - name: GitHub traffic
       uses: sangonzal/repository-traffic-action@v0.1.4
       env:
-        TRAFFIC_ACTION_TOKEN: ${{ secrets.TERMINAL }}
+        TRAFFIC_ACTION_TOKEN: ${{ secrets.TRAFFIC_ACTION_TOKEN }}
 
     # Commits files to repository
     - name: Commit changes
