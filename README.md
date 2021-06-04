@@ -35,25 +35,26 @@ the default configuration looks like this:
 ```
 
 - `countryCodes`: an Array of ISO2 values.  
-A list cen be obtain at this url: https://api.covid19api.com/countries
+A list can be obtained at this url: https://api.covid19api.com/countries
 
 - `world`: a boolean value (`true` or `false`).  
-Set to `true`it shows the world total numbers, it does not otherwise.
+Set to `true` it shows the world's total numbers, it does not otherwise.  
 
 - `live`: a boolean value (`true` or `false`).  
-Set to `true` it shows the total numbers per country set in `countryCodes`, it does not otherwise.
+Set to `true` it shows the total numbers per country set in `countryCodes`, it does not otherwise.  
 
-- `updateInterval`: a number in milliseconds to be used to refresh the numbers. Its value is only used when `useScheduler=false`.  
-Its default values invokes an API call every 24 hours from starting from the first one.
+- `updateInterval`: a value expressed in milliseconds to be used to refresh the numbers.  
+Its value is only used when `useScheduler=false`.  
+Its default values invokes an API call every 24 hours, starting from the first invocation date and time.  
 
 - `useScheduler`: a boolean value (`true` or `false`).  
-Set to `true` it uses _cron_ like approach to refresh the data. It uses [`node-schedule`](https://github.com/node-schedule/node-schedule), in order to be able to use thi option, you need to run `npm install`
+Set to `true` it uses a _cron_ like approach to refresh the data. It uses [`node-schedule`](https://github.com/node-schedule/node-schedule), in order to be able to use this option, you need to run `npm install` or `npm ci`.  
 
-- `schedulerConfig`: a valid `node-schedule`configuration as a string or as an object.  
+- `schedulerConfig`: a valid [`node-schedule`](https://github.com/node-schedule/node-schedule) configuration as a string or as an object.  
 Its default value execute an API call _twice a day every day ad 12am and 12pm UTC time_.
   
   
-The numbers shown are the delta between last day 00:00 UTC and the day before 00:00 UTC. The dates can be shown at the bottom of the list.
+The numbers shown are the delta between last day 00:00 UTC and the day before 00:00 UTC.
 
 ## screenshots
 ![MMM-covid19](docs/MMM-covid19.png)
