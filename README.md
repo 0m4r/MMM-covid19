@@ -1,3 +1,5 @@
+Last two weeks stats:
+
 ![views](https://raw.githubusercontent.com/0m4r/traffic-badges/traffic/traffic-MMM-covid19/views.svg)
 ![views per week](https://raw.githubusercontent.com/0m4r/traffic-badges/traffic/traffic-MMM-covid19/views_per_week.svg)
 ![clones](https://raw.githubusercontent.com/0m4r/traffic-badges/traffic/traffic-MMM-covid19/clones.svg)
