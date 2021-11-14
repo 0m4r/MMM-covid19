@@ -6,7 +6,8 @@
  */
 
 const NodeHelper = require('node_helper');
-const request = require('request');
+const { URL, URLSearchParams } = require('url');
+const fetch = require('node-fetch');
 const { version } = require('./package.json');
 const Log = require('../../js/logger.js');
 
@@ -57,26 +58,19 @@ module.exports = NodeHelper.create({
     const requests = [];
     const qs = this.getFromTo();
     countryCodes.forEach((countryCode) => {
-      const url = `${this.baseURL}/total/country/${countryCode}`;
-      Log.info(this.name, 'fetchTotal', url, JSON.stringify(qs));
-      const req = new Promise((resolve, _reject) =>
-        request(
-          {
-            rejectUnauthorized: false,
-            url,
-            qs,
-            method: 'GET',
-          },
-          (error, response, body) => {
-            if (!error && response.statusCode === 200) {
-              resolve({ countryCode, body: JSON.parse(body) });
-            } else {
-              Log.error(this.name, 'fetchTotal', countryCode, error);
-              resolve({ countryCode, body: [] });
-            }
-          }
-        )
-      );
+      const url = new URL(`${this.baseURL}/total/country/${countryCode}`);
+      url.search = new URLSearchParams(qs)
+      Log.debug(this.name, 'fetchTotal', url, JSON.stringify(qs));
+      const req = new Promise(async (resolve, _reject) => {
+        const resp = await fetch(url);
+        if (resp.status === 200) {
+          const data = await resp.json();
+          resolve({ countryCode, body: data });
+        } else {
+          Log.error(this.name, 'fetchTotal', countryCode, resp);
+          resolve({ countryCode, body: [] });
+        }
+      });
 
       requests.push(req);
     });
@@ -88,64 +82,42 @@ module.exports = NodeHelper.create({
       .catch(() => this.sendSocketNotification(this.name + 'TOTAL_RESULTS', []));
   },
 
-  fetchWorld: function () {
+  fetchWorld: async function () {
+    let results = {}
     const qs = this.getFromTo(1);
-    const url = `${this.baseURL}/world`;
+    const url = new URL(`${this.baseURL}/world`)
+    url.search = new URLSearchParams(qs);
     Log.debug(this.name, 'fetchWorld', url, JSON.stringify(qs));
-    request(
-      {
-        rejectUnauthorized: false,
-        url,
-        method: 'GET',
-        qs,
-      },
-      (error, response, body) => {
-        let results = {};
-        if (
-          body &&
-          body !== 'null\n' &&
-          !error &&
-          response.statusCode === 200
-        ) {
-          results = JSON.parse(body)[0];
-        } else {
-          Log.error(this.name, 'fetchWorld', error);
-        }
-        this.sendSocketNotification(this.name + 'WORLD_RESULTS', {
-          countryCode: 'world',
-          body: results,
-        });
-      }
-    );
+    const resp = await fetch(url, { qs });
+    if (resp.status === 200) {
+      const data = await resp.json();
+      results = data[0]
+    } else {
+      Log.error(this.name, 'fetchWorld', resp);
+    }
+
+    this.sendSocketNotification(this.name + 'WORLD_RESULTS', {
+      countryCode: 'world',
+      body: results,
+    });
   },
 
-  fetchVersion: function () {
-    const url =
-      'https://raw.githubusercontent.com/0m4r/MMM-covid19/main/package.json';
+  fetchVersion: async function () {
+    let remote = 0;
+    const url = 'https://raw.githubusercontent.com/0m4r/MMM-covid19/main/package.json';
     Log.debug(this.name, 'fetchVersion', url);
-    request(
-      {
-        rejectUnauthorized: false,
-        url,
-        method: 'GET',
-      },
-      (error, response, body) => {
-        let remote = 0;
-        if (!error && response.statusCode === 200) {
-          const results = JSON.parse(body);
-          remote = results.version || 0;
-        } else {
-          Log.error(this.name, 'fetchVersion', error);
-        }
-        this.sendSocketNotification(this.name + 'VERSION_RESULTS', {
-          local: version,
-          remote,
-        });
-      }
-    );
+    const resp = await fetch(url);
+    if (resp.status === 200) {
+      const data = await resp.json();
+      remote = data.version || 0;
+    }
+    this.sendSocketNotification(this.name + 'VERSION_RESULTS', {
+      local: version,
+      remote,
+    });
   },
 
-  fetchAll: function(config = this.config) {
+  fetchAll: function (config = this.config) {
     Log.info(this.name, 'fetchAll', JSON.stringify(config));
     config.live && this.fetchTotal(config.countryCodes);
     config.world && this.fetchWorld();
@@ -162,7 +134,7 @@ module.exports = NodeHelper.create({
       }
       this.interval = setInterval(fetch, this.config.updateInterval);
       fetch();
-    }catch(e){
+    } catch (e) {
       Log.error(this.name, 'fetchAllWithInterval', e)
     }
   },
@@ -183,7 +155,7 @@ module.exports = NodeHelper.create({
       const scheduleConfig = this.config.schedulerConfig;
       this.scheduler = schedule.scheduleJob(scheduleConfig, fetch)
       fetch();
-    }catch(e) {
+    } catch (e) {
       Log.error(this.name, 'fetchAllWithSchedule', e)
     }
   },
@@ -196,7 +168,7 @@ module.exports = NodeHelper.create({
         ...payload,
       };
       Log.info(this.name, 'socketNotificationReceived', 'useScheduler:', payload.useScheduler);
-      if(payload.useScheduler) {
+      if (payload.useScheduler) {
         this.fetchAllWithSchedule(payload)
       } else {
         this.fetchAllWithInterval(payload);
