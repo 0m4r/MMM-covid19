@@ -25,7 +25,7 @@ the default configuration looks like this:
   disabled: false,
   module: "MMM-covid19",
   position: "bottom_center",
-  defaults: {
+  config: {
     countryCodes: ['DE', 'IT'],
     world: false,
     live: true,
