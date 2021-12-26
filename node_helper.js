@@ -21,7 +21,7 @@ module.exports = NodeHelper.create({
     useScheduler: false,
     schedulerConfig: '0 0 */12 * * */1' //00 and 12 of every dayOfWeek (only used if useScheduler=true)
   },
-  baseURL: 'https://api.covid19api.com',
+  baseURL: 'https://corona.lmao.ninja/v2',
   scheduler: null,
   config: {},
 
@@ -36,70 +36,43 @@ module.exports = NodeHelper.create({
     }
   },
 
-  getFromTo: function (delta = 2) {
-    const buildDate = function () {
-      let d = new Date();
-      d.setUTCHours(0, 0, 0, 0);
-      return d;
-    };
-
-    let to = buildDate();
-    let from = buildDate();
-    from.setDate(to.getDate() - delta);
-
-    to = to.toISOString();
-    from = from.toISOString();
-
-    return { from, to };
-  },
-
-  fetchTotal: function (countryCodes = []) {
+  fetchTotal: async function (countryCodes = []) {
+    countryCodes.sort()
     Log.debug(this.name, 'fetchTotal', countryCodes);
-    const requests = [];
-    const qs = this.getFromTo();
-    countryCodes.forEach((countryCode) => {
-      const url = new URL(`${this.baseURL}/total/country/${countryCode}`);
-      url.search = new URLSearchParams(qs)
-      Log.debug(this.name, 'fetchTotal', url, JSON.stringify(qs));
-      const req = new Promise(async (resolve, _reject) => {
-        const resp = await fetch(url);
-        if (resp.status === 200) {
-          const data = await resp.json();
-          resolve({ countryCode, body: data });
-        } else {
-          Log.error(this.name, 'fetchTotal', countryCode, resp);
-          resolve({ countryCode, body: [] });
-        }
-      });
-
-      requests.push(req);
-    });
-
-    Promise.all(requests)
-      .then((res) => {
-        this.sendSocketNotification(this.name + 'TOTAL_RESULTS', res);
-      })
-      .catch(() => this.sendSocketNotification(this.name + 'TOTAL_RESULTS', []));
-  },
-
-  fetchWorld: async function () {
-    let results = {}
-    const qs = this.getFromTo(1);
-    const url = new URL(`${this.baseURL}/world`)
-    url.search = new URLSearchParams(qs);
-    Log.debug(this.name, 'fetchWorld', url, JSON.stringify(qs));
-    const resp = await fetch(url, { qs });
+    const url = new URL(`${this.baseURL}/countries/${countryCodes.join(',')}?yesterday=true&strict=true&`);
+    Log.info(this.name, 'fetchTotal', url.href);
+    let results = []
+    const resp = await fetch(url);
     if (resp.status === 200) {
       const data = await resp.json();
-      results = data[0]
+      if (data) {
+        results.push(data)
+        results = [].concat.apply([], results).map(cc => ({
+          body: [
+            {
+              country: cc.country,
+              active: null,
+              confirmed: cc.cases,
+              recovered: cc.recovered,
+              death: cc.deaths,
+              test: null,
+              date: new Date(cc.updated).toISOString()
+            }, {
+              country: cc.country,
+              active: cc.active,
+              confirmed: cc.todayCases,
+              recovered: cc.todayRecovered,
+              death: cc.todayDeaths,
+              test: cc.tests,
+              date: new Date(cc.updated).toISOString()
+            }]
+        }))
+      }
     } else {
-      Log.error(this.name, 'fetchWorld', resp);
+      Log.error(this.name, 'fetchTotal', countryCodes.join(','), resp);
+      results = countryCodes.map(m => ({ countryCode: m, body: [] }))
     }
-
-    this.sendSocketNotification(this.name + 'WORLD_RESULTS', {
-      countryCode: 'world',
-      body: results,
-    });
+    this.sendSocketNotification(this.name + 'TOTAL_RESULTS', results)
   },
 
   fetchVersion: async function () {
@@ -120,7 +93,6 @@ module.exports = NodeHelper.create({
   fetchAll: function (config = this.config) {
     Log.info(this.name, 'fetchAll', JSON.stringify(config));
     config.live && this.fetchTotal(config.countryCodes);
-    config.world && this.fetchWorld();
     this.fetchVersion();
   },
 
@@ -149,7 +121,7 @@ module.exports = NodeHelper.create({
       const fetch = () => {
         this.fetchAll();
         this.sendSocketNotification(this.name + 'NEXT_UPDATE', [new Date(), new Date(this.scheduler.nextInvocation())]);
-        Log.info(this.name, 'fetchAllWithSchedule | next execution scheduled for:', new Date(this.scheduler.nextInvocation()));
+        Log.info(this.name, 'fetchAllWithSchedule | next execution scheduled for:', new Date(this.scheduler.nextInvocation()).toLocaleString());
       }
 
       const scheduleConfig = this.config.schedulerConfig;
