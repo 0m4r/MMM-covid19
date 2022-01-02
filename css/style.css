@@ -3,7 +3,7 @@
 }
 
 .mmm-covid19-table {
-  table-layout: fixed;
+  /* table-layout: fixed; */
   border-collapse: collapse !important;
   border-bottom: 1px solid white;
 }

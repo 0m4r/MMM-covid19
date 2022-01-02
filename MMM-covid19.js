@@ -11,11 +11,17 @@ Module.register('MMM-covid19', {
   nextUpdate: [],
   version: null,
   notAvailable: '-',
+  locale: null,
 
   start: function () {
     Log.info('Starting module ' + this.name);
     Log.debug('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification(this.name + 'CONFIG', this.config);
+    locale = navigator.language;
+    if (![undefined, null].includes(this.config.locale)) {
+      locale = this.config.locale
+      Log.debug('using locale: ' + locale);
+    }
   },
 
   stop: function () {
@@ -26,6 +32,11 @@ Module.register('MMM-covid19', {
     Log.info('Resuming module ' + this.name);
     Log.debug('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification('CONFIG', this.config);
+    locale = navigator.language;
+    if (![undefined, null].includes(this.config.locale)) {
+      locale = this.config.locale
+      Log.debug('using locale: ' + locale);
+    }
   },
 
   getDom: function () {
@@ -40,7 +51,7 @@ Module.register('MMM-covid19', {
     const p_header = document.createElement('p');
     p_header.className = 'mmm-covid19-header';
     const p_header_text = document.createTextNode(
-      'powered by https://github.com/NovelCOVID/API'
+      'powered by https://disease.sh/v3/covid-19/ and https://github.com/NovelCOVID/API'
     );
     p_header.appendChild(p_header_text);
     wrapper.appendChild(p_header);
@@ -58,9 +69,6 @@ Module.register('MMM-covid19', {
     }
     ['Country', 'Active', 'Recovered', 'Deaths', 'Confirmed', 'Tests'].forEach(th => createTableHeaders(th))
 
-    // const tr_headers = document.createElement('tr');
-    // table.appendChild(tr_headers);
-
     wrapper.appendChild(table);
 
     const p_footer = document.createElement('p');
@@ -76,12 +84,16 @@ Module.register('MMM-covid19', {
     };
 
     if (this.nextUpdate && this.nextUpdate[1]) {
+      let date = new Date(this.nextUpdate[1])
+      if (Date.prototype.toLocaleString) {
+        date = date.toLocaleString(locale)
+      }
       const p_footer_left = document.createElement('p');
       p_footer_left.classList.add('mmm-covid19-footer-left');
       p_footer.appendChild(p_footer_left);
       p_footer_left.appendChild(
         spanForFooter(
-          'Next API request: ' + new Date(this.nextUpdate[1]).toLocaleString(),
+          'Next API request: ' + new Date(date).toLocaleString(locale),
           'mmm-covid19-footer-dates'
         )
       );
@@ -119,7 +131,11 @@ Module.register('MMM-covid19', {
             const td_country = document.createElement('td');
             const text_country = document.createTextNode(c.country);
             const td_div = document.createElement('div');
-            const text_div = document.createTextNode(new Date(c.date).toLocaleString());
+            let date = new Date(c.date)
+            if (Date.prototype.toLocaleString) {
+              date = date.toLocaleString(locale)
+            }
+            const text_div = document.createTextNode(date);
             td_div.appendChild(text_div);
             td_country.appendChild(text_country);
             td_country.appendChild(td_div);
@@ -132,7 +148,7 @@ Module.register('MMM-covid19', {
             let text = data;
             if (!isNaN(data)) {
               if (Number.prototype.toLocaleString) {
-                text = [null, undefined].includes(data) ? this.notAvailable : data.toLocaleString();
+                text = [null, undefined].includes(data) ? this.notAvailable : Math.abs(data).toLocaleString(locale);
               }
               td.className =
                 index === 0
@@ -146,7 +162,7 @@ Module.register('MMM-covid19', {
           };
 
           prepareTableCellData(c.active);
-          prepareTableCellData(c.recovered);
+          prepareTableCellData(parseFloat(c.recovered) * -1);
           prepareTableCellData(c.death);
           prepareTableCellData(c.confirmed);
           prepareTableCellData(c.test);

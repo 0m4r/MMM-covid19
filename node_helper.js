@@ -15,13 +15,13 @@ module.exports = NodeHelper.create({
   interval: null,
   defaults: {
     countryCodes: ['DE', 'IT'],
-    world: false,
-    live: true,
     updateInterval: 24 * 60 * 60 * 1000, // 24 hours (only used if useScheduler=false)
     useScheduler: false,
-    schedulerConfig: '0 0 */12 * * */1' //00 and 12 of every dayOfWeek (only used if useScheduler=true)
+    schedulerConfig: '0 0 */12 * * */1', //00 and 12 of every dayOfWeek (only used if useScheduler=true)
+    yesterday: false,
+    locale: 'en-US'
   },
-  baseURL: 'https://corona.lmao.ninja/v2',
+  baseURL: 'https://disease.sh/v3/covid-19',
   scheduler: null,
   config: {},
 
@@ -39,7 +39,7 @@ module.exports = NodeHelper.create({
   fetchTotal: async function (countryCodes = []) {
     countryCodes.sort()
     Log.debug(this.name, 'fetchTotal', countryCodes);
-    const url = new URL(`${this.baseURL}/countries/${countryCodes.join(',')}?yesterday=true&strict=true&`);
+    const url = new URL(`${this.baseURL}/countries/${countryCodes.join(',')}?yesterday=${this.config.yesterday}&strict=true&`);
     Log.info(this.name, 'fetchTotal', url.href);
     let results = []
     const resp = await fetch(url);
@@ -92,7 +92,7 @@ module.exports = NodeHelper.create({
 
   fetchAll: function (config = this.config) {
     Log.info(this.name, 'fetchAll', JSON.stringify(config));
-    config.live && this.fetchTotal(config.countryCodes);
+    this.fetchTotal(config.countryCodes);
     this.fetchVersion();
   },
 
@@ -102,7 +102,7 @@ module.exports = NodeHelper.create({
       const fetch = () => {
         this.fetchAll();
         this.sendSocketNotification(this.name + 'NEXT_UPDATE', [new Date(), new Date(Date.now() + this.config.updateInterval)]);
-        Log.info(this.name, 'fetchAllWithInterval| next execution scheduled for', new Date(Date.now() + this.config.updateInterval));
+        Log.info(this.name, 'fetchAllWithInterval| next execution scheduled for', new Date(Date.now() + this.config.updateInterval).toLocaleString(this.config.locale));
       }
       this.interval = setInterval(fetch, this.config.updateInterval);
       fetch();
@@ -121,7 +121,7 @@ module.exports = NodeHelper.create({
       const fetch = () => {
         this.fetchAll();
         this.sendSocketNotification(this.name + 'NEXT_UPDATE', [new Date(), new Date(this.scheduler.nextInvocation())]);
-        Log.info(this.name, 'fetchAllWithSchedule | next execution scheduled for:', new Date(this.scheduler.nextInvocation()).toLocaleString());
+        Log.info(this.name, 'fetchAllWithSchedule | next execution scheduled for:', new Date(this.scheduler.nextInvocation()).toLocaleString(this.config.locale));
       }
 
       const scheduleConfig = this.config.schedulerConfig;
@@ -139,7 +139,7 @@ module.exports = NodeHelper.create({
         ...this.defaults,
         ...payload,
       };
-      Log.info(this.name, 'socketNotificationReceived', 'useScheduler:', payload.useScheduler);
+      Log.debug(this.name, 'socketNotificationReceived', 'useScheduler:', payload.useScheduler);
       if (payload.useScheduler) {
         this.fetchAllWithSchedule(payload)
       } else {
