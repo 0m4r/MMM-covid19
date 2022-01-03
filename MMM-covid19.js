@@ -106,14 +106,14 @@ Module.register('MMM-covid19', {
       p_footer.appendChild(p_footer_left);
       p_footer_left.appendChild(
         spanForFooter(
-          'Data for: ' + new Date(this.results[0][0].Date).toLocaleString() + ' - ' + new Date(this.results[0][1].Date).toLocaleString(),
+          'Data for: ' + new Date(this.results[0][0].Date).toLocaleString(this.config.locale) + ' - ' + new Date(this.results[0][1].Date).toLocaleString(this.config.locale),
           'mmm-covid19-footer-dates'
         )
       );
       if (this.nextUpdate && this.nextUpdate[1]) {
         p_footer_left.appendChild(
           spanForFooter(
-            'Next API request: ' + new Date(this.nextUpdate[1]).toLocaleString(),
+            'Next API request: ' + new Date(this.nextUpdate[1]).toLocaleString(this.config.locale),
             'mmm-covid19-footer-dates'
           )
         );
@@ -161,7 +161,7 @@ Module.register('MMM-covid19', {
             let text = data;
             if (!isNaN(data)) {
               if (Number.prototype.toLocaleString) {
-                text = data.toLocaleString();
+                text = data.toLocaleString(this.config.locale);
               }
               td.className =
                 index === 0
