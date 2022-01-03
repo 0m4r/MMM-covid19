@@ -15,11 +15,11 @@ Module.register('MMM-covid19', {
 
   start: function () {
     Log.info('Starting module ' + this.name);
-    Log.debug('with config: ' + JSON.stringify(this.config));
+    Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification(this.name + 'CONFIG', this.config);
-    locale = navigator.language;
+    this.locale = navigator.language;
     if (![undefined, null].includes(this.config.locale)) {
-      locale = this.config.locale
+      this.locale = this.config.locale
       Log.debug('using locale: ' + locale);
     }
   },
@@ -30,11 +30,11 @@ Module.register('MMM-covid19', {
 
   resume: function () {
     Log.info('Resuming module ' + this.name);
-    Log.debug('with config: ' + JSON.stringify(this.config));
+    Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification('CONFIG', this.config);
-    locale = navigator.language;
+    this.locale = navigator.language;
     if (![undefined, null].includes(this.config.locale)) {
-      locale = this.config.locale
+      this.locale = this.config.locale
       Log.debug('using locale: ' + locale);
     }
   },
@@ -86,14 +86,14 @@ Module.register('MMM-covid19', {
     if (this.nextUpdate && this.nextUpdate[1]) {
       let date = new Date(this.nextUpdate[1])
       if (Date.prototype.toLocaleString) {
-        date = date.toLocaleString(locale)
+        date = date.toLocaleString(this.locale)
       }
       const p_footer_left = document.createElement('p');
       p_footer_left.classList.add('mmm-covid19-footer-left');
       p_footer.appendChild(p_footer_left);
       p_footer_left.appendChild(
         spanForFooter(
-          'Next API request: ' + new Date(date).toLocaleString(locale),
+          'Next API request: ' + date,
           'mmm-covid19-footer-dates'
         )
       );
@@ -133,7 +133,7 @@ Module.register('MMM-covid19', {
             const td_div = document.createElement('div');
             let date = new Date(c.date)
             if (Date.prototype.toLocaleString) {
-              date = date.toLocaleString(locale)
+              date = date.toLocaleString(this.locale)
             }
             const text_div = document.createTextNode(date);
             td_div.appendChild(text_div);
@@ -148,7 +148,7 @@ Module.register('MMM-covid19', {
             let text = data;
             if (!isNaN(data)) {
               if (Number.prototype.toLocaleString) {
-                text = [null, undefined].includes(data) ? this.notAvailable : Math.abs(data).toLocaleString(locale);
+                text = [null, undefined].includes(data) ? this.notAvailable : Math.abs(data).toLocaleString(this.locale);
               }
               td.className =
                 index === 0
@@ -262,8 +262,8 @@ Module.register('MMM-covid19', {
     }
 
     if (notification === this.name + 'NEXT_UPDATE') {
-      this.loaded = true,
-        this.nextUpdate = payload;
+      this.loaded = true;
+      this.nextUpdate = payload;
       this.updateDom();
     }
   },
