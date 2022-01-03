@@ -14,7 +14,7 @@ Module.register('MMM-covid19', {
 
   start: function () {
     Log.info('Starting module ' + this.name);
-    Log.debug('with config: ' + JSON.stringify(this.config));
+    Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification(this.name + 'CONFIG', this.config);
   },
 
@@ -24,7 +24,7 @@ Module.register('MMM-covid19', {
 
   resume: function () {
     Log.info('Resuming module ' + this.name);
-    Log.debug('with config: ' + JSON.stringify(this.config));
+    Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification('CONFIG', this.config);
   },
 
