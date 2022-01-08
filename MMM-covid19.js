@@ -11,11 +11,17 @@ Module.register('MMM-covid19', {
   nextUpdate: [],
   version: null,
   notAvailable: '-',
+  locale: null,
 
   start: function () {
     Log.info('Starting module ' + this.name);
     Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification(this.name + 'CONFIG', this.config);
+    this.locale = navigator.language;
+    if (![undefined, null].includes(this.config.locale)) {
+      this.locale = this.config.locale
+      Log.debug('using locale: ' + this.locale);
+    }
   },
 
   stop: function () {
@@ -26,6 +32,11 @@ Module.register('MMM-covid19', {
     Log.info('Resuming module ' + this.name);
     Log.info('with config: ' + JSON.stringify(this.config));
     this.sendSocketNotification('CONFIG', this.config);
+    this.locale = navigator.language;
+    if (![undefined, null].includes(this.config.locale)) {
+      this.locale = this.config.locale
+      Log.debug('using locale: ' + this.locale);
+    }
   },
 
   getDom: function () {
@@ -40,7 +51,7 @@ Module.register('MMM-covid19', {
     const p_header = document.createElement('p');
     p_header.className = 'mmm-covid19-header';
     const p_header_text = document.createTextNode(
-      'COVID-19 numbers (powered by https://covid19api.com/)'
+      'powered by https://disease.sh/v3/covid-19/ and https://github.com/NovelCOVID/API'
     );
     p_header.appendChild(p_header_text);
     wrapper.appendChild(p_header);
@@ -48,36 +59,15 @@ Module.register('MMM-covid19', {
     const table = document.createElement('table');
     table.className = 'mmm-covid19-table';
     const tr = document.createElement('tr');
-
-    const th_country = document.createElement('th');
-    const text_country = document.createTextNode('Country');
-
-    const th_active = document.createElement('th');
-    const text_active = document.createTextNode('Active');
-
-    const th_recovered = document.createElement('th');
-    const text_recovered = document.createTextNode('Recovered');
-
-    const th_deaths = document.createElement('th');
-    const text_deaths = document.createTextNode('Deaths');
-
-    const th_confirmed = document.createElement('th');
-    const text_confirmed = document.createTextNode('Confirmed');
-
     table.appendChild(tr);
-    th_country.appendChild(text_country);
-    tr.appendChild(th_country);
-    th_active.appendChild(text_active);
-    tr.appendChild(th_active);
-    th_recovered.appendChild(text_recovered);
-    tr.appendChild(th_recovered);
-    th_deaths.appendChild(text_deaths);
-    tr.appendChild(th_deaths);
-    th_confirmed.appendChild(text_confirmed);
-    tr.appendChild(th_confirmed);
 
-    const tr_headers = document.createElement('tr');
-    table.appendChild(tr_headers);
+    const createTableHeaders = (name) => {
+      const th = document.createElement('th');
+      const text = document.createTextNode(name);
+      th.appendChild(text);
+      tr.appendChild(th);
+    }
+    ['Country', 'Active', 'Recovered', 'Deaths', 'Confirmed', 'Tests'].forEach(th => createTableHeaders(th))
 
     wrapper.appendChild(table);
 
@@ -93,31 +83,20 @@ Module.register('MMM-covid19', {
       return span_footer;
     };
 
-    if (
-      this.results &&
-      this.results.length &&
-      this.results[0] &&
-      this.results[0].length === 2 &&
-      'Date' in this.results[0][1] &&
-      'Date' in this.results[0][0]
-    ) {
+    if (this.nextUpdate && this.nextUpdate[1]) {
+      let date = new Date(this.nextUpdate[1])
+      if (Date.prototype.toLocaleString) {
+        date = date.toLocaleString(this.locale)
+      }
       const p_footer_left = document.createElement('p');
       p_footer_left.classList.add('mmm-covid19-footer-left');
       p_footer.appendChild(p_footer_left);
       p_footer_left.appendChild(
         spanForFooter(
-          'Data for: ' + new Date(this.results[0][0].Date).toLocaleString(this.config.locale) + ' - ' + new Date(this.results[0][1].Date).toLocaleString(this.config.locale),
+          'Next API request: ' + date,
           'mmm-covid19-footer-dates'
         )
       );
-      if (this.nextUpdate && this.nextUpdate[1]) {
-        p_footer_left.appendChild(
-          spanForFooter(
-            'Next API request: ' + new Date(this.nextUpdate[1]).toLocaleString(this.config.locale),
-            'mmm-covid19-footer-dates'
-          )
-        );
-      }
     }
 
     if (this.version && 'local' in this.version && 'remote' in this.version) {
@@ -150,8 +129,16 @@ Module.register('MMM-covid19', {
             index === 0 ? 'mmm-covid19-row-totals' : 'mmm-covid19-row-deltas';
           if (index === 0) {
             const td_country = document.createElement('td');
-            const text_country = document.createTextNode(c.Country);
+            const text_country = document.createTextNode(c.country);
+            const td_div = document.createElement('div');
+            let date = new Date(c.date)
+            if (Date.prototype.toLocaleString) {
+              date = date.toLocaleString(this.locale)
+            }
+            const text_div = document.createTextNode(date);
+            td_div.appendChild(text_div);
             td_country.appendChild(text_country);
+            td_country.appendChild(td_div);
             td_country.rowSpan = 2;
             tr.appendChild(td_country);
           }
@@ -161,7 +148,7 @@ Module.register('MMM-covid19', {
             let text = data;
             if (!isNaN(data)) {
               if (Number.prototype.toLocaleString) {
-                text = data.toLocaleString(this.config.locale);
+                text = [null, undefined].includes(data) ? this.notAvailable : Math.abs(data).toLocaleString(this.locale);
               }
               td.className =
                 index === 0
@@ -174,10 +161,11 @@ Module.register('MMM-covid19', {
             tr.appendChild(td);
           };
 
-          prepareTableCellData(c.Active);
-          prepareTableCellData(c.Recovered);
-          prepareTableCellData(c.Deaths);
-          prepareTableCellData(c.Confirmed);
+          prepareTableCellData(c.active);
+          prepareTableCellData(parseFloat(c.recovered) * -1);
+          prepareTableCellData(c.death);
+          prepareTableCellData(c.confirmed);
+          prepareTableCellData(c.test);
           table.appendChild(tr);
         });
       });
@@ -215,34 +203,11 @@ Module.register('MMM-covid19', {
         payload.forEach((p) => {
           const countryLabel =
             (p.body[0] && p.body[0].Country) || p.countryCode;
-          notAvailable.Country = countryLabel;
+          notAvailable.country = countryLabel;
           if (p.body.length <= 1) {
-            results.push([notAvailable, notAvailable]);
-          } else if (p.body.length === 1) {
-            const pastDays = p.body.slice(Math.max(p.length - 2, 0));
-            const last = pastDays[0];
-            const present = {
-              Country: last.Country,
-              Active: last.Active,
-              Confirmed: last.Confirmed,
-              Recovered: last.Recovered,
-              Deaths: last.Deaths,
-              Date: last.Date,
-            };
-            results.push([present, notAvailable]);
-          } else {
-            const pastDays = p.body.slice(Math.max(p.length - 2, 0));
-            const past = pastDays[0];
-            const present = pastDays[1];
-            const difference = {
-              Country: present.Country,
-              Active: present.Active - past.Active,
-              Confirmed: present.Confirmed - past.Confirmed,
-              Recovered: present.Recovered - past.Recovered,
-              Deaths: present.Deaths - past.Deaths,
-              Date: past.Date,
-            };
-            results.push([present, difference]);
+            results.push([p.body[0], notAvailable]);
+          } else if (p.body.length === 2) {
+            results.push(p.body);
           }
         });
         this.results = results;
@@ -297,8 +262,8 @@ Module.register('MMM-covid19', {
     }
 
     if (notification === this.name + 'NEXT_UPDATE') {
-      this.loaded = true,
-        this.nextUpdate = payload;
+      this.loaded = true;
+      this.nextUpdate = payload;
       this.updateDom();
     }
   },

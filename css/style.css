@@ -37,7 +37,15 @@
   font-size: 20px;
 }
 
-.mmm-covid19-table tr:nth-child(odd) {
+.mmm-covid19-table td div{
+  line-height: normal;
+  font-size: 60%;
+  white-space: nowrap;
+  color: var(--color-text-dimmed);
+}
+
+.mmm-covid19-table tr:first-of-type,
+.mmm-covid19-table tr:nth-child(even) {
   border-top: 1px solid white;
 }
 
