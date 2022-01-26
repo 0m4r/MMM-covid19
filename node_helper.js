@@ -5,11 +5,13 @@
  *
  */
 
-const NodeHelper = require('node_helper');
-const URL = require('url');
 import fetch from 'node-fetch';
 import { version } from './package.json';
-const Log = require('../../js/logger.js');
+import schedule from 'node-schedule';
+
+import NodeHelper from 'node_helper';
+import URL from 'url';
+import Log from '../../js/logger.js';
 
 export default NodeHelper.create({
   interval: null,
@@ -113,7 +115,6 @@ export default NodeHelper.create({
 
   fetchAllWithSchedule() {
     try {
-      import schedule from 'node-schedule';
       if (this.scheduler !== null) {
         this.scheduler.cancel()
       }
