@@ -25,6 +25,9 @@
   },
   "homepage": "https://github.com/0m4r/MMM-covid19#readme",
   "devDependencies": {
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/preset-env": "^7.16.11",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0"
   },
