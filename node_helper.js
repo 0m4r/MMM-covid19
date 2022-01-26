@@ -6,10 +6,10 @@
  */
 
 const NodeHelper = require('node_helper');
-import { URL } from 'url';
+const URL = require('url');
 import fetch from 'node-fetch';
 import { version } from './package.json';
-import Log from '../../js/logger.js';
+const Log = require('../../js/logger.js');
 
 export default NodeHelper.create({
   interval: null,
