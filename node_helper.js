@@ -5,13 +5,13 @@
  *
  */
 
-const NodeHelper = require('node_helper');
-const { URL, URLSearchParams } = require('url');
-const fetch = require('node-fetch');
-const { version } = require('./package.json');
-const Log = require('../../js/logger.js');
+import NodeHelper from 'node_helper';
+import { URL } from 'url';
+import fetch from 'node-fetch';
+import { version } from './package.json';
+import Log from '../../js/logger.js';
 
-module.exports = NodeHelper.create({
+export default NodeHelper.create({
   interval: null,
   defaults: {
     countryCodes: ['DE', 'IT'],
@@ -113,7 +113,7 @@ module.exports = NodeHelper.create({
 
   fetchAllWithSchedule() {
     try {
-      const schedule = require('node-schedule');
+      import schedule from 'node-schedule';
       if (this.scheduler !== null) {
         this.scheduler.cancel()
       }
