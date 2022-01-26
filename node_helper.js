@@ -5,7 +5,7 @@
  *
  */
 
-import NodeHelper from 'node_helper';
+const NodeHelper = require('node_helper');
 import { URL } from 'url';
 import fetch from 'node-fetch';
 import { version } from './package.json';
