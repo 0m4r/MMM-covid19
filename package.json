@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "Magic Mirror Module for Covid-19 stats",
   "main": "MMM-covid19.js",
+  "type": "module",
   "scripts": {
     "lint": "eslint",
     "lint:fix": "eslint --fix"
