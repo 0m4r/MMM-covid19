@@ -1,6 +1,6 @@
 {
   "name": "mmm-covid19",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Magic Mirror Module for Covid-19 stats",
   "main": "MMM-covid19.js",
   "scripts": {
