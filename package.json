@@ -28,7 +28,7 @@
     "eslint-config-prettier": "^8.1.0"
   },
   "dependencies": {
-    "node-fetch": "2.6.13",
+    "node-fetch": "2.7.0",
     "node-schedule": "^2.1.1"
   }
 }
